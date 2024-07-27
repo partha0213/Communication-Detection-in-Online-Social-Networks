@@ -1,0 +1,101 @@
+#Data Collection
+import tweepy
+import pandas as pd
+consumer_key = 'your_consumer_key'
+consumer_secret = 'your_consumer_secret'
+access_token = 'your_access_token'
+access_token_secret = 'your_access_token_secret'
+
+# Set up the tweepy API authentication
+auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
+auth.set_access_token(access_token, access_token_secret)
+api = tweepy.API(auth)
+
+# Function to fetch tweets
+def fetch_tweets(query, count=100):
+    tweets = tweepy.Cursor(api.search_tweets, q=query, lang="en").items(count)
+    tweet_list = [[tweet.created_at, tweet.user.screen_name, tweet.text] for tweet in tweets]
+    return pd.DataFrame(tweet_list, columns=['Datetime', 'Username', 'Text'])
+
+# Example: Fetch tweets about "machine learning"
+df_tweets = fetch_tweets("machine learning", count=200)
+print(df_tweets.head())
+#Data Preprocessing
+import re
+
+def clean_tweet(tweet):
+    tweet = re.sub(r'http\S+', '', tweet)  # Remove URLs
+    tweet = re.sub(r'@\S+', '', tweet)  # Remove mentions
+    tweet = re.sub(r'#\S+', '', tweet)  # Remove hashtags
+    tweet = re.sub(r'\W', ' ', tweet)  # Remove special characters
+    tweet = re.sub(r'\s+', ' ', tweet)  # Remove extra spaces
+    tweet = tweet.lower()  # Convert to lowercase
+    return tweet
+
+df_tweets['Cleaned_Text'] = df_tweets['Text'].apply(clean_tweet)
+print(df_tweets.head())
+# Sentiment Analysis
+from textblob import TextBlob
+
+def get_sentiment(text):
+    analysis = TextBlob(text)
+    return analysis.sentiment.polarity
+
+df_tweets['Sentiment'] = df_tweets['Cleaned_Text'].apply(get_sentiment)
+print(df_tweets.head())
+#Visualization
+import matplotlib.pyplot as plt
+
+plt.hist(df_tweets['Sentiment'], bins=30, edgecolor='black')
+plt.title('Sentiment Analysis of Tweets')
+plt.xlabel('Sentiment Polarity')
+plt.ylabel('Frequency')
+plt.show()
+import tweepy
+import pandas as pd
+import re
+from textblob import TextBlob
+import matplotlib.pyplot as plt
+
+# Tweepy setup (replace with your credentials)
+consumer_key = 'your_consumer_key'
+consumer_secret = 'your_consumer_secret'
+access_token = 'your_access_token'
+access_token_secret = 'your_access_token_secret'
+
+auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
+auth.set_access_token(access_token, access_token_secret)
+api = tweepy.API(auth)
+
+# Fetch tweets function
+def fetch_tweets(query, count=100):
+    tweets = tweepy.Cursor(api.search_tweets, q=query, lang="en").items(count)
+    tweet_list = [[tweet.created_at, tweet.user.screen_name, tweet.text] for tweet in tweets]
+    return pd.DataFrame(tweet_list, columns=['Datetime', 'Username', 'Text'])
+
+# Clean tweet function
+def clean_tweet(tweet):
+    tweet = re.sub(r'http\S+', '', tweet)
+    tweet = re.sub(r'@\S+', '', tweet)
+    tweet = re.sub(r'#\S+', '', tweet)
+    tweet = re.sub(r'\W', ' ', tweet)
+    tweet = re.sub(r'\s+', ' ', tweet)
+    tweet = tweet.lower()
+    return tweet
+
+# Get sentiment function
+def get_sentiment(text):
+    analysis = TextBlob(text)
+    return analysis.sentiment.polarity
+
+# Fetch and process tweets
+df_tweets = fetch_tweets("machine learning", count=200)
+df_tweets['Cleaned_Text'] = df_tweets['Text'].apply(clean_tweet)
+df_tweets['Sentiment'] = df_tweets['Cleaned_Text'].apply(get_sentiment)
+
+# Plot sentiment analysis
+plt.hist(df_tweets['Sentiment'], bins=30, edgecolor='black')
+plt.title('Sentiment Analysis of Tweets')
+plt.xlabel('Sentiment Polarity')
+plt.ylabel('Frequency')
+plt.show()
